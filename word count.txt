@@ -1,0 +1,16 @@
+﻿import org.apache.spark.SparkContext
+
+
+val sc = new SparkContext()
+var text = sc.textFile("word.txt").flatMap(line=>line.split(" ")).map(word=>(word,1))
+
+
+var counts = text.reduceByKey(+)
+var keys = counts.keys
+
+
+var sort = keys.sortBy(x=>x,true)
+
+
+counts.saveAsTextFile("1")
+sort.saveAsTextFile("2")

@@ -1,0 +1,17 @@
+﻿import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.functions._
+val sc = SparkSession.builder().getOrCreate()
+var base_df = sc.read.option("header","true").csv("weblog.csv")
+base_df.printSchema()
+base_df.show(10)
+var sliced = base_df.withColumn("Time",expr("substring(Time,2,length(Time))"))
+sliced.show(10)
+var ip_reg = sliced.filter(col("IP").rlike("""^(?:[0-9]{1,3}\.){3}[0-9]{1,3}"""))
+ip_reg.show(10)
+ip_reg = ip_reg.withColumn("Date",expr("substring(Time,1,11)"))
+ip_reg.groupBy("IP").count().sort(desc("count")).show()
+ip_reg.groupBy("URL").count().sort(desc("count")).show(5)
+ip_reg.select($"IP").distinct().show()
+ip_reg.where($"Staus"===404).count()
+ip_reg.select($"IP").where($"Staus"===404).groupBy("IP").count().show(25)
+ip_reg.select($"IP",$"Date").distinct().groupBy("Date").count().show()
